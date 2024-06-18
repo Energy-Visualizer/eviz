@@ -4,7 +4,7 @@ from json import loads as json_from_string
 from django.contrib.auth.models import User
 import plotly.express as px  # for making the scatter plot
 import pandas.io.sql as pd_sql  # for getting data into a pandas dataframe
-from eviz.models import PSUT, Index, Dataset, Country, Method, EnergyType, LastStage, IEAMW, matname, AggLevel
+from eviz.models import PSUT, Index, Dataset, Country, Method, EnergyType, LastStage, IEAMW, matname, AggLevel, GrossNet
 import sys # for silencing stdout warnings (pandas using psycopg2 connection right now)
 from os import devnull
 from django.db import connection # for low-level psycopg2 connection. to access other db connections, import connections
@@ -89,6 +89,9 @@ def translate_query(
             v)
     if v := query.get("industry_aggregation"):
         translated_query["IndustryAggregation"] = Translator.agglevel_translate(
+            v)
+    if v := query.get("grossnet"):
+        translated_query["GrossNet"] = Translator.grossnet_translate(
             v)
 
     # plot-specific query parts
@@ -422,6 +425,7 @@ class Translator():
     __matname_translations = None
     __dataset_translations = None
     __productaggregation_translations = None
+    __grossnet_translations = None
 
     @staticmethod
     def index_translate(name: str) -> int:
@@ -556,6 +560,24 @@ class Translator():
             Translator.__IEAMW_translations = {name: id for id, name in IEAMWs}
 
         return list(Translator.__IEAMW_translations.keys())
+    
+    
+    
+    @staticmethod
+    def grossnet_translate(name: str) -> int:
+        if Translator.__grossnet_translations == None:
+            grossnets = GrossNet.objects.values_list("GrossNetID", "GrossNet")
+            Translator.__grossnet_translations = {name: id for id, name in grossnets}
+
+        return Translator.__grossnet_translations[name]
+
+    @staticmethod
+    def get_grossnets() -> list[str]:
+        if Translator.__grossnet_translations == None:
+            grossnets = GrossNet.objects.values_list("GrossNetID", "GrossNet")
+            Translator.__grossnet_translations = {name: id for id, name in grossnets}
+
+        return list(Translator.__grossnet_translations.keys())
 
     @staticmethod
     def includesNEU_translate(name: bool) -> int:

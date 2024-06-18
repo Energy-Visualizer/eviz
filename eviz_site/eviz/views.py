@@ -117,9 +117,10 @@ def visualizer(request):
     ieamws.remove("Both") # TODO: this should be less hard coded
     matnames = Translator.get_matnames()
     matnames.sort(key=len) # sort matrix names by how long they are... seems reasonable
-    
+    grossnets = Translator.get_grossnets()
+    print(grossnets)
     context = {"datasets":datasets, "countries":countries, "methods":methods,
-            "energy_types":energy_types, "last_stages":last_stages, "ieamws":ieamws, "matnames":matnames
+            "energy_types":energy_types, "last_stages":last_stages, "ieamws":ieamws, "matnames":matnames, "grossnets":grossnets
             }
 
     return render(request, "visualizer.html", context)

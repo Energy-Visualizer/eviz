@@ -8,6 +8,7 @@ const initialize = () => {
     toYearInput = document.getElementById("to-year-input");
     efficiencyDropdown = document.getElementById('efficiency-dropdown');
     matnameDropdown = document.getElementById("matname-dropdown");
+    grossNet = document.getElementById("grossnet_radio")
 
     // have specifics show differently for different plots
     let selectedValue = null; // to be filled in the following loop
@@ -44,6 +45,7 @@ const initialize = () => {
         inputOff(efficiencyDropdown);
         inputOff(matnameDropdown);
         inputOff(singleYearInput);
+        inputOff(grossNet)
     }
 }
 
@@ -60,7 +62,8 @@ const inputOff = (element) => {
 const handleXYPlot = () => {
     inputOff(singleYearInput);
     inputOff(matnameDropdown);
-
+    
+    inputOn(grossNet)
     inputOn(fromYearInput);
     inputOn(toYearInput);
     inputOn(efficiencyDropdown);
@@ -71,6 +74,7 @@ const handleSankey = () => {
     inputOff(toYearInput);
     inputOff(efficiencyDropdown);
     inputOff(matnameDropdown);
+    inputOff(grossNet);
 
     inputOn(singleYearInput);
 }
@@ -79,6 +83,7 @@ const handleMatrices = () => {
     inputOff(fromYearInput);
     inputOff(toYearInput);
     inputOff(efficiencyDropdown);
+    inputOff(grossNet);
     
     inputOn(matnameDropdown);
     inputOn(singleYearInput);
