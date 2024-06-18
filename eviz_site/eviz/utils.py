@@ -1,4 +1,3 @@
-# for low-level psycopg2 connection. to access other db connections, import connections
 from scipy.sparse import coo_matrix
 from eviz.models import AggEtaPFU
 from json import loads as json_from_string
@@ -6,16 +5,12 @@ from django.contrib.auth.models import User
 import plotly.express as px  # for making the scatter plot
 import pandas.io.sql as pd_sql  # for getting data into a pandas dataframe
 from eviz.models import PSUT, Index, Dataset, Country, Method, EnergyType, LastStage, IEAMW, matname, AggLevel
-import sys
-# for silencing stdout warnings (pandas using psycopg2 connection right now)
+import sys # for silencing stdout warnings (pandas using psycopg2 connection right now)
 from os import devnull
-from django.db import connection
+from django.db import connection # for low-level psycopg2 connection. to access other db connections, import connections
 import plotly.graph_objects as pgo
 
-
 from time import time
-
-
 def time_view(v):
     '''Wrapper to time how long it takes to deliver a view
 
@@ -196,8 +191,6 @@ def iea_valid(user: User, query: dict) -> bool:
 with open("internal_resources/sankey_color_scheme.json") as f:
     colors_data = f.read()
 SANKEY_COLORS: dict[str, str] = json_from_string(colors_data)
-
-
 def get_sankey(query: dict) -> pgo.Figure:
     '''Gets a sankey diagram for a query
 
@@ -311,8 +304,15 @@ def get_xy(efficiency_metric, query: dict) -> pgo.Figure:
         a plotly Figure with the xy data
     '''
 
-    agg_query = AggEtaPFU.objects.filter(
-        **query).values("Year", efficiency_metric).query
+    # get all the deisred columns in the given query
+    # remove any filter directives in the keys, which are all prefixed by double underscore
+    desired_columns = {k.split("__")[0] for k in query.keys()}
+
+    # append year and desired metric to set of desired columns
+    desired_columns.add("Year")
+    desired_columns.add(efficiency_metric)
+
+    agg_query = AggEtaPFU.objects.filter(**query).values(*desired_columns).query
 
     with Silent():
         df = pd_sql.read_sql_query(
@@ -329,9 +329,11 @@ def get_matrix(query: dict) -> coo_matrix:
     '''Collects, constructs, and returns one of the RUVY matrices
 
     Inputs:
+
         a query ready to hit the database, i.e. translated as neccessary (see translate_query())
 
     Outputs:
+
         A scipy coo_matrix containing all the values from the specified query
         or None if the given query related to no data 
     '''
